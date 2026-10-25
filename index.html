@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Open Block Clock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="top">
+      <div class="top-left">
+        <div class="status"><span class="dot"></span><span id="status">CONNECTING</span></div>
+      </div>
+      <div class="logo">OPEN BLOCK CLOCK</div>
+      <div class="clock">
+        <button type="button" id="themeToggle" class="theme-btn" aria-label="Switch between dark and light">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(14 12 12)">
+            <path d="M9.5 2.5v3M13 2.5v3M9.5 18.5v3M13 18.5v3"/>
+            <path d="M6.5 5.5h7.25a3.25 3.25 0 0 1 0 6.5H6.5M8 5.5v13M6.5 12h8a3.25 3.25 0 0 1 0 6.5h-8"/>
+          </g></svg>
+        </button>
+        <span id="date">—</span><span id="time">—</span>
+      </div>
+    </header>
+
+    <div class="halving">
+      <span class="v start" id="halvStart">—</span>
+      <div class="track" id="halvTrack" role="progressbar" aria-label="Progress to next halving"
+        aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <i class="fill" id="halvFill"></i>
+      </div>
+      <span class="v end"><small>1/2</small><span id="halvNext">—</span></span>
+    </div>
+
+    <main class="view">
+      <div class="fit"><span id="height" class="fit-text">—</span></div>
+    </main>
+  </div>
+
+  <div id="flash" aria-hidden="true">
+    <div class="flash-label">TICK TOCK, NEXT BLOCK</div>
+    <div class="flash-height" id="flashHeight"></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
