@@ -1,13 +1,10 @@
 # Open Block Clock
 
-A full-screen Bitcoin network dashboard for a Raspberry Pi or Windows kiosk, with
-a computer-terminal look: smooth terminal digits, monospace labels ending in a
-period, square corners, faint scanlines and only a few touches of bitcoin orange
-(`#F7931A`).
-
-No build step, no dependencies: plain HTML, CSS and JavaScript, served locally
+An open source bitcoin block clock that displays the latest block tip. No build step, no dependencies: plain HTML, CSS and JavaScript, served locally
 and shown in a full-screen kiosk browser (Chromium on the Pi, Edge or Chrome on
 Windows).
+
+<img width="2554" height="1275" alt="Screenshot 2026-10-25 140230" src="https://github.com/user-attachments/assets/105d9bc7-aada-4f57-8c2e-5b92178997bb" />
 
 ## How it works
 
