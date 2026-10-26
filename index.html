@@ -17,15 +17,26 @@
     <header class="top">
       <div class="top-left">
         <div class="status"><span class="dot"></span><span id="status">CONNECTING</span></div>
+        <nav class="switch" aria-label="Views">
+          <button type="button" data-view="height" aria-label="Block height">[1]</button>
+          <button type="button" data-view="dashboard" aria-label="Dashboard">[2]</button>
+          <button type="button" data-view="halving" aria-label="Halving dial">[3]</button>
+          <button type="button" data-view="price" aria-label="Price">[4]</button>
+          <button type="button" data-view="info" aria-label="About Open Block Clock">[i]</button>
+        </nav>
       </div>
       <div class="logo">OPEN BLOCK CLOCK</div>
       <div class="clock">
-        <button type="button" id="themeToggle" class="theme-btn" aria-label="Switch between dark and light">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(14 12 12)">
-            <path d="M9.5 2.5v3M13 2.5v3M9.5 18.5v3M13 18.5v3"/>
-            <path d="M6.5 5.5h7.25a3.25 3.25 0 0 1 0 6.5H6.5M8 5.5v13M6.5 12h8a3.25 3.25 0 0 1 0 6.5h-8"/>
-          </g></svg>
-        </button>
+        <div class="theme-menu">
+          <button type="button" id="themeToggle" class="theme-btn" aria-label="Change theme"
+            aria-haspopup="true" aria-expanded="false" aria-controls="themeList" title="Theme">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(14 12 12)">
+              <path d="M9.5 2.5v3M13 2.5v3M9.5 18.5v3M13 18.5v3"/>
+              <path d="M6.5 5.5h7.25a3.25 3.25 0 0 1 0 6.5H6.5M8 5.5v13M6.5 12h8a3.25 3.25 0 0 1 0 6.5h-8"/>
+            </g></svg>
+          </button>
+          <ul id="themeList" class="theme-list" role="menu" hidden></ul>
+        </div>
       </div>
     </header>
 
@@ -36,8 +47,104 @@
       </div>
     </div>
 
-    <main class="view">
+    <!-- The space bar steps through these views, in this order. -->
+    <main class="view view-height">
       <div class="fit"><span id="height" class="fit-text">—</span></div>
+    </main>
+
+    <main class="view view-dashboard">
+      <section class="hero">
+        <div class="hero-main">
+          <div class="fit stack">
+            <div class="label">BLOCK HEIGHT</div>
+            <span id="height2" class="fit-text">—</span>
+          </div>
+          <div class="hero-sub">
+            <div class="kv"><span class="k">LAST BLOCK</span><span class="v" id="since">—</span></div>
+            <div class="kv"><span class="k">MINED BY</span><span class="v" id="lastPool">—</span></div>
+          </div>
+        </div>
+        <div class="hero-side">
+          <div class="label">PRICE <span id="cur"></span></div>
+          <div class="fit"><span id="price" class="fit-text">—</span></div>
+          <div class="hero-sub">
+            <div class="kv"><span class="k" id="satsLabel">SATS PER DOLLAR</span><span class="v" id="sats">—</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tiles">
+        <div class="tile">
+          <div class="label">FEES <span class="tag" id="feeTag"></span></div>
+          <div class="big"><span id="feeFast">—</span><small>SAT/VB</small></div>
+          <div class="sub" id="feeSub">—</div>
+        </div>
+        <div class="tile">
+          <div class="label">MEMPOOL <span class="tag" id="mempoolTag"></span></div>
+          <div class="big"><span id="mpCount">—</span><small>TXS</small></div>
+          <div class="sub" id="mpSub">—</div>
+        </div>
+        <div class="tile">
+          <div class="label">DIFFICULTY ADJUSTMENT</div>
+          <div class="big"><span id="diffChange">—</span></div>
+          <div class="sub" id="diffSub">—</div>
+          <div class="bar"><i id="diffBar"></i></div>
+        </div>
+        <div class="tile">
+          <div class="label">HALVING</div>
+          <div class="big"><span id="halvBlocks">—</span><small>BLOCKS</small></div>
+          <div class="sub" id="halvSub">—</div>
+          <div class="bar"><i id="halvBar"></i></div>
+        </div>
+      </section>
+
+      <section class="chain" id="chain"></section>
+
+      <footer class="bottom">
+        <div class="supply">
+          <span class="k">SUPPLY</span>
+          <span class="bar inline"><i id="supplyBar"></i></span>
+          <span id="supplyPct">—</span>
+        </div>
+        <div><span class="k">HASHRATE</span> <span id="hashrate">—</span></div>
+      </footer>
+    </main>
+
+    <main class="view view-halving">
+      <section class="v2-main">
+        <div class="fit"><span id="height3" class="fit-text">—</span></div>
+      </section>
+      <section class="halv-info">
+        <div class="clock-box" id="clockBox">
+          <svg id="halvClock" class="halv-clock" role="img" aria-label="Blocks to next halving"></svg>
+        </div>
+      </section>
+    </main>
+
+    <main class="view view-price">
+      <div class="fit"><span id="priceStep" class="fit-text"><span id="priceValue">—</span><svg class="price-arrow" viewBox="0 0 10 12" aria-hidden="true"><path d="M5 0L10 5.5H6.4V12H3.6V5.5H0Z"/></svg></span></div>
+    </main>
+
+    <!-- About the project: opened with the [i] button (not part of the
+         space bar's loop). -->
+    <main class="view view-info">
+      <section class="about" id="about">
+        <div class="about-head">
+          <h1 class="info-title">OPEN BLOCK CLOCK<span class="title-sub">PROJECT</span></h1>
+          <div class="cube-box" title="Drag to spin"><pre class="cube-art" id="cubeArt" aria-hidden="true"></pre></div>
+          <div class="cube-box" title="Drag to spin"><pre class="cube-art" id="coinArt" aria-hidden="true"></pre></div>
+        </div>
+        <p class="about-lead">A Bitcoin block clock with nothing to hide.</p>
+        <p>Open Block Clock is a free, open-source block clock, built from scratch.
+          It shows block height, halvings, fees and the mempool, all pulled
+          straight from the Bitcoin network.</p>
+        <ul class="about-points">
+          <li><b>Bitcoin only.</b> Blocks, halvings, fees, mempool. Nothing else.</li>
+          <li><b>Fully open.</b> MIT licensed. Plain HTML, CSS and JavaScript.</li>
+          <li><b>Self-hosted.</b> Runs on a Raspberry Pi against your own node.</li>
+          <li><b>Private.</b> No accounts, no tracking.</li>
+        </ul>
+      </section>
     </main>
   </div>
 
@@ -45,6 +152,8 @@
     <div class="flash-label">TICK TOCK, NEXT BLOCK</div>
     <div class="flash-height" id="flashHeight"></div>
   </div>
+
+  <div id="probe"></div>
 
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
