@@ -21,7 +21,7 @@
     'btc-dark': 'Bitcoin Dark', 'btc-light': 'Bitcoin Light',
   };
   // The space bar steps through these, in this order.
-  const VIEWS = ['height', 'dashboard', 'halving', 'price'];
+  const VIEWS = ['height', 'halving', 'price', 'dashboard'];
   // Views you can open from the header but the space bar skips.
   const ALL_VIEWS = [...VIEWS, 'info'];
 
@@ -164,6 +164,7 @@
     renderHalvingClock();
     fitAbout();
     fitArt();
+    placeViews();
   }
 
   // ---------- network ----------
@@ -463,7 +464,7 @@
   function setView(view) {
     state.view = ALL_VIEWS.includes(view) ? view : VIEWS[0];
     $('app').dataset.view = state.view;
-    document.querySelectorAll('.switch button[data-view]').forEach((b) =>
+    document.querySelectorAll('button[data-view]').forEach((b) =>
       b.setAttribute('aria-pressed', String(b.dataset.view === state.view)));
     // A view can only be measured once it's shown.
     requestAnimationFrame(layout);
@@ -754,7 +755,9 @@
   }
 
   // Scale the about page as one piece to fit the screen. Everything in it is
-  // sized in em, so setting its font size scales the lot.
+  // sized in em, so setting its font size scales the lot. The text reflows to
+  // match the screen's shape first: narrow on tall screens, wide on wide
+  // ones, whichever width lets it grow the largest.
   function fitAbout() {
     const about = $('about');
     const box = about.parentElement;
@@ -763,8 +766,15 @@
     const h = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
     if (w <= 0 || h <= 0) return;
     about.style.fontSize = '10px';
-    const scale = Math.min(w / about.offsetWidth, h / about.offsetHeight) * 0.94;
-    about.style.fontSize = `${Math.floor(100 * scale) / 10}px`;
+    let best = 0;
+    let bestWidth = 0;
+    for (let em = 34; em <= 66; em += 4) {
+      about.style.width = `${em}em`;
+      const scale = Math.min(w / about.offsetWidth, h / about.offsetHeight);
+      if (scale > best) { best = scale; bestWidth = em; }
+    }
+    about.style.width = `${bestWidth}em`;
+    about.style.fontSize = `${Math.floor(100 * best * 0.94) / 10}px`;
   }
 
   function buildAbout() {
@@ -834,6 +844,49 @@
   }
 
   // Header theme dropdown: the small ₿ button opens a list of themes.
+  // [1]-[4] sit in a row beside the status when there's room before the
+  // logo, and drop down as a list centred under the status word when there
+  // isn't.
+  function placeViews() {
+    const views = $('views');
+    if (!views) return;
+    views.classList.remove('drop');
+    views.style.left = '';
+    const logo = document.querySelector('.logo').getBoundingClientRect();
+    if (views.getBoundingClientRect().right <= logo.left - 8) return;
+    views.classList.add('drop');
+    const word = $('status').getBoundingClientRect();
+    const box = views.parentElement.getBoundingClientRect();
+    const left = word.left + word.width / 2 - views.offsetWidth / 2 - box.left;
+    views.style.left = `${Math.max(left, -box.left)}px`;
+  }
+
+  // Clicking the status (LIVE) shows [1]-[4] beside it; picking one, clicking
+  // anywhere else or Esc tucks them away again.
+  function buildViewsMenu() {
+    const btn = $('viewsToggle');
+    const views = $('views');
+    if (!btn || !views) return;
+    const open = (show) => {
+      if (show) placeViews();
+      views.classList.toggle('open', show);
+      btn.setAttribute('aria-expanded', String(show));
+    };
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      open(!views.classList.contains('open'));
+    });
+    views.addEventListener('click', (e) => {
+      if (e.target.closest('button[data-view]')) open(false);
+    });
+    document.addEventListener('click', (e) => {
+      if (views.classList.contains('open') && !views.contains(e.target)) open(false);
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && views.classList.contains('open')) { open(false); btn.focus(); }
+    });
+  }
+
   function buildThemeMenu() {
     const btn = $('themeToggle');
     const list = $('themeList');
@@ -926,9 +979,10 @@
     buildHalvingTicks();
     buildAbout();
     setView(initialView());
-    // The [1] [2] [3] [4] [i] header buttons jump straight to a view.
-    document.querySelectorAll('.switch button[data-view]').forEach((b) =>
+    // The [1] [2] [3] [4] and i header buttons jump straight to a view.
+    document.querySelectorAll('button[data-view]').forEach((b) =>
       b.addEventListener('click', () => setView(b.dataset.view)));
+    buildViewsMenu();
 
     // Test the new-block screen: press N, or open with ?demo=block.
     // T cycles the themes, the space bar steps to the next view.

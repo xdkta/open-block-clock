@@ -21,17 +21,20 @@ Bitcoin network.
 - Block height, scaled to fill the screen, refreshed every 10 seconds
 - Halving progress line from the last halving block to the next, under the
   header of the block height view
-- An about page, opened with [i] in the header: the Open Block Clock
-  project's story beside a spinning 3D bitcoin block and coin, drawn in text
-  from the latest block hash (drag them to spin)
-- More views, one press of the space bar apart (or click [1] to [4] in the
-  header to jump to one):
-  - **Dashboard**: block height, price, fees, mempool, difficulty
+- An about page, opened with the faint i in the header: the Open Block
+  Clock project's story beside a spinning 3D bitcoin block and coin, drawn
+  in text from the latest block hash (drag them to spin)
+
+  <img src="docs/info.png" alt="The Open Block Clock about page" width="932">
+
+- More views, one press of the space bar apart (or click the status, e.g.
+  `LIVE`, in the header and pick [1] to [4] to jump to one):
+  - **[2] Halving dial**: block height beside a dial of the blocks left to
+    the next halving
+  - **[3] Price**: the price, rounded down to steps (default $500), with an
+    up or down arrow for the way it last stepped
+  - **[4] Dashboard**: block height, price, fees, mempool, difficulty
     adjustment, halving, the next and latest blocks, supply and hashrate
-  - **Halving dial**: block height beside a dial of the blocks left to the
-    next halving
-  - **Price**: the price, rounded down to steps (default $500), with an up
-    or down arrow for the way it last stepped
 - **TICK TOCK, NEXT BLOCK** screen when a new block is found
 - Five themes: Dark, Light, Brown Town, Bitcoin Dark and Bitcoin Light
 - `LIVE` / `DELAYED` / `OFFLINE` status if the data source drops out

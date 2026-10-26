@@ -9,24 +9,27 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230D0D0D'/%3E%3Crect x='6' y='22' width='20' height='4' fill='%23F7931A'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Share+Tech+Mono&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div id="app">
     <header class="top">
       <div class="top-left">
-        <div class="status"><span class="dot"></span><span id="status">CONNECTING</span></div>
-        <nav class="switch" aria-label="Views">
+        <!-- The status doubles as the views button: it shows [1]-[4]. -->
+        <button type="button" class="status" id="viewsToggle" aria-label="Show views"
+          aria-expanded="false" aria-controls="views"><span class="dot"></span><span id="status">CONNECTING</span></button>
+        <nav class="switch" id="views" aria-label="Views">
           <button type="button" data-view="height" aria-label="Block height">[1]</button>
-          <button type="button" data-view="dashboard" aria-label="Dashboard">[2]</button>
-          <button type="button" data-view="halving" aria-label="Halving dial">[3]</button>
-          <button type="button" data-view="price" aria-label="Price">[4]</button>
-          <button type="button" data-view="info" aria-label="About Open Block Clock">[i]</button>
+          <button type="button" data-view="halving" aria-label="Halving dial">[2]</button>
+          <button type="button" data-view="price" aria-label="Price">[3]</button>
+          <button type="button" data-view="dashboard" aria-label="Dashboard">[4]</button>
         </nav>
       </div>
       <div class="logo">OPEN BLOCK CLOCK</div>
       <div class="clock">
+        <button type="button" class="info-btn" data-view="info"
+          aria-label="About Open Block Clock" title="About">i</button>
         <div class="theme-menu">
           <button type="button" id="themeToggle" class="theme-btn" aria-label="Change theme"
             aria-haspopup="true" aria-expanded="false" aria-controls="themeList" title="Theme">
@@ -131,19 +134,21 @@
       <section class="about" id="about">
         <div class="about-head">
           <h1 class="info-title">OPEN BLOCK CLOCK<span class="title-sub">PROJECT</span></h1>
-          <div class="cube-box" title="Drag to spin"><pre class="cube-art" id="cubeArt" aria-hidden="true"></pre></div>
-          <div class="cube-box" title="Drag to spin"><pre class="cube-art" id="coinArt" aria-hidden="true"></pre></div>
+          <div class="cube-box" title="Drag to spin">
+            <pre class="cube-art" id="cubeArt" aria-hidden="true"></pre>
+          </div>
+          <div class="cube-box" title="Drag to spin">
+            <pre class="cube-art" id="coinArt" aria-hidden="true"></pre>
+          </div>
         </div>
-        <p class="about-lead">A Bitcoin block clock with nothing to hide.</p>
-        <p>Open Block Clock is a free, open-source block clock, built from scratch.
-          It shows block height, halvings, fees and the mempool, all pulled
-          straight from the Bitcoin network.</p>
-        <ul class="about-points">
-          <li><b>Bitcoin only.</b> Blocks, halvings, fees, mempool. Nothing else.</li>
-          <li><b>Fully open.</b> MIT licensed. Plain HTML, CSS and JavaScript.</li>
-          <li><b>Self-hosted.</b> Runs on a Raspberry Pi against your own node.</li>
-          <li><b>Private.</b> No accounts, no tracking.</li>
-        </ul>
+        <p class="about-lead"><b>Open source</b> software designed to show
+          the <span class="btc">Bitcoin</span> block height and more.</p>
+        <div class="about-cols">
+          <p class="about-more">Alongside the height it tracks the next halving,
+            network fees, the mempool and the price across four screens.</p>
+          <p class="about-more">Data comes from mempool.space by default, or
+            from your own node so nothing leaves your network.</p>
+        </div>
       </section>
     </main>
   </div>
