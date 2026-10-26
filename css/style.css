@@ -180,10 +180,39 @@ body::after {
   letter-spacing: 0.05em;
 }
 .top-left { display: flex; align-items: center; gap: 2em; min-width: 0; }
-.status { display: flex; align-items: center; gap: 0.6em; white-space: nowrap; }
-/* View switch: plain [1] [2] [3] [4], faint until hovered. The current view
-   is a little brighter. The space bar steps through the same views. */
-.switch { display: flex; gap: 0.2em; }
+/* The status is also the button that shows the views. */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.4em 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  white-space: nowrap;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.status:focus-visible { outline: none; text-decoration: underline; }
+/* View switch: plain [1] [2] [3] [4], tucked away until the status is
+   clicked, then faded in beside it. The current view is a little brighter.
+   The space bar steps through the same views. */
+.switch {
+  display: flex;
+  gap: 0.2em;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-0.6em);
+  transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
+}
+.switch.open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
 .switch button {
   font: inherit;
   letter-spacing: 0;
@@ -193,12 +222,31 @@ body::after {
   padding: 0.4em 0.2em;
   cursor: pointer;
   white-space: nowrap;
-  opacity: 0.04;
+  opacity: 0.3;
   transition: opacity 0.3s ease;
 }
-.switch button[aria-pressed="true"] { opacity: 0.12; }
+.switch button[aria-pressed="true"] { opacity: 0.7; }
 .switch button:hover,
-.switch button:focus-visible { opacity: 0.85; outline: none; }
+.switch button:focus-visible { opacity: 1; outline: none; }
+
+/* Too narrow to sit beside the status (they'd run into the logo): the
+   views drop down under it instead, as a small list like the theme menu.
+   The script sets .drop. */
+.top-left { position: relative; }
+.switch.drop {
+  position: absolute;
+  top: calc(100% + 0.2em);
+  left: 0;
+  z-index: 30;
+  flex-direction: column;
+  gap: 0;
+  padding: 0.35em 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  transform: translateY(-0.5em);
+}
+.switch.drop.open { transform: none; }
+.switch.drop button { padding: 0.55em 1em; }
 .dot {
   width: 0.6em; height: 0.6em;
   background: var(--fg);
@@ -253,6 +301,21 @@ body::after {
 .theme-btn:focus-visible,
 .theme-btn[aria-expanded="true"] { opacity: 0.8; outline: none; }
 
+/* About: a plain i beside the ₿, almost invisible until hovered. */
+.info-btn {
+  padding: 0;
+  font-family: var(--font);
+  font-size: calc(var(--u) * 1.5);
+  line-height: 1;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  opacity: 0.06;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+.info-btn:hover,
+.info-btn:focus-visible { opacity: 0.8; outline: none; }
 .theme-list {
   position: absolute;
   top: calc(100% + 1.1em);
@@ -646,7 +709,8 @@ body::after {
 /* ---------- about ---------- */
 
 /* The story and the art, scaled as one piece to fit the screen: everything
-   inside .about is sized in em, and the script sets .about's font size. */
+   inside .about is sized in em, and the script sets .about's width and font
+   size. */
 .view-info {
   position: relative;
   align-items: center;
@@ -661,7 +725,7 @@ body::after {
   display: flex;
   align-items: center;
   gap: 1.6em;
-  margin-bottom: 1.6em;
+  margin-bottom: 0.7em;
 }
 .info-title {
   flex: 1;
@@ -680,28 +744,24 @@ body::after {
   color: var(--btc);
 }
 .about-lead {
-  margin: 0 0 1em;
+  margin: 0 0 0.6em;
   font-size: 1.5em;
-  line-height: 1.4;
+  line-height: 1.3;
 }
-.about p:not(.about-lead) {
-  margin: 0 0 0.9em;
-  font-size: 1.1em;
-  line-height: 1.6;
-  color: var(--muted);
-}
-.about-points {
+/* The two smaller paragraphs, side by side under the lead. */
+.about-cols {
   display: grid;
-  gap: 0.5em;
-  margin: 0.6em 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 1.05em;
-  line-height: 1.5;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.8em;
+}
+.about-more {
+  margin: 0;
+  font-size: 1.1em;
+  line-height: 1.45;
   color: var(--muted);
 }
-.about-points li::before { content: "> "; color: var(--btc); }
-.about-points b { font-weight: 500; color: var(--fg); }
+.about-lead b { font-weight: 700; }
+.about-lead .btc { color: var(--btc); }
 
 /* The spinning block and coin beside the title; the script sizes the art
    to fill its box. */
@@ -784,5 +844,4 @@ body::after {
   .tile:nth-child(2n) { border-right: 0; padding-right: 0; }
   .tile:nth-child(2n + 1) { padding-left: 0; }
   .tile:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
-  .about { width: 40em; }
 }
