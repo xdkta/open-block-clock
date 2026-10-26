@@ -16,8 +16,6 @@ window.OBC_CONFIG = {
   nightStart: 21,
   nightEnd: 7,
 
-  clock24h: true,
-
   // How often to check the block height, in seconds.
   refresh: {
     tip: 10,

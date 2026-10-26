@@ -34,7 +34,6 @@
   // Thousands are separated by a (non-breaking) space instead of a comma.
   const groupWithSpaces = (s) => s.replace(/,/g, ' ');
   const int = (n) => groupWithSpaces(Math.round(n).toLocaleString('en-US'));
-  const pad2 = (n) => String(n).padStart(2, '0');
 
   // Scale a .fit-text element so it fills its .fit container.
   function fit(el) {
@@ -113,10 +112,7 @@
   function renderHalving() {
     if (state.tip == null) return;
     const start = Math.floor(state.tip / HALVING_INTERVAL) * HALVING_INTERVAL;
-    const next = start + HALVING_INTERVAL;
     const progress = (state.tip - start) / HALVING_INTERVAL;
-    setText('halvStart', int(start));
-    setText('halvNext', int(next));
     $('halvFill').style.width = `${progress * 100}%`;
     $('halvTrack').setAttribute('aria-valuenow', (progress * 100).toFixed(1));
     document.querySelectorAll('#halvTrack .tick').forEach((t, i) =>
@@ -140,15 +136,6 @@
   // ---------- once-a-second tick ----------
 
   function tick() {
-    const now = new Date();
-    const time = C.clock24h
-      ? `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`
-      : now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
-    setText('time', time);
-    setText('date', now.toLocaleDateString('en-US', {
-      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-    }).replace(/,/g, '').toUpperCase());
-
     const age = Date.now() - state.lastOk;
     const status = $('status').parentElement;
     let label = 'CONNECTING';
