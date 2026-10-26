@@ -28,6 +28,9 @@
   --btc: #F7931A;
   --scanline: rgba(0, 0, 0, 0.07);
   --bg-scanline: rgba(0, 0, 0, 0.035);
+  /* One screen pixel, whatever the zoom or display scaling, and the
+     scanline images; the script sets all three. */
+  --hair: 1px;
 }
 
 :root[data-theme="dark"] {
@@ -40,6 +43,46 @@
   --bg-scanline: rgba(255, 255, 255, 0.045);
 }
 
+/* Brown Town — light shades of brown. */
+:root[data-theme="brown"] {
+  --bg: #EFE3D3;
+  --fg: #3E2C1F;
+  --line: #DCC8B0;
+  --panel: #E5D4BE;
+  --muted: rgba(62, 44, 31, 0.62);
+  --scanline: rgba(62, 44, 31, 0.06);
+  --bg-scanline: rgba(62, 44, 31, 0.035);
+}
+
+/* Bitcoin Dark — black background with separate shades of bitcoin orange:
+   orange numbers, pale peach labels, dark amber panels and lines, and a
+   lighter gold for the accents so they stand apart from the text. */
+:root[data-theme="btc-dark"] {
+  --bg: #0D0D0D;
+  --fg: #F7931A;
+  --line: #3A2510;
+  --panel: #1C1309;
+  --muted: rgba(255, 204, 150, 0.55);
+  --btc: #FFC56B;
+  --scanline: rgba(0, 0, 0, 0.28);
+  --bg-scanline: rgba(247, 147, 26, 0.035);
+}
+
+/* Bitcoin Light — Bitcoin Dark inverted: a bitcoin orange background with
+   black numbers, dark brown labels, deeper orange panels and lines, and
+   pale cream accents (the mirror of Bitcoin Dark's gold) so the halving
+   line and live dot stand apart from the text. */
+:root[data-theme="btc-light"] {
+  --bg: #F7931A;
+  --fg: #0D0D0D;
+  --line: #D67A0E;
+  --panel: #E88512;
+  --muted: rgba(45, 22, 0, 0.66);
+  --btc: #FFF1DC;
+  --scanline: rgba(13, 13, 13, 0.07);
+  --bg-scanline: rgba(13, 13, 13, 0.035);
+}
+
 @keyframes intro {
   0%   { opacity: 0; letter-spacing: 0.7em; }
   70%  { opacity: 0.5; }
@@ -50,6 +93,10 @@
   0%   { opacity: 0; letter-spacing: 0.3em; }
   70%  { opacity: 0.6; }
   100% { opacity: 1; letter-spacing: -0.02em; }
+}
+@keyframes fadeUp {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 @keyframes blink {
   0%, 49%   { opacity: 1; }
@@ -68,16 +115,12 @@ html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  /* The same scanline pattern, faintly, across the background. */
+  /* The same scanline pattern, faintly, across the background: a 1 x 4
+     screen-pixel tile the script draws, repeated without smoothing. */
   background:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent 3px,
-      var(--bg-scanline) 3px,
-      var(--bg-scanline) 4px
-    ),
+    var(--bg-scan-img, none) 0 0 / var(--hair) calc(var(--hair) * 4),
     var(--bg);
+  image-rendering: pixelated;
   color: var(--fg);
 }
 
@@ -100,13 +143,8 @@ body::after {
   inset: 0;
   z-index: 20;
   pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 3px,
-    var(--scanline) 3px,
-    var(--scanline) 4px
-  );
+  background: var(--scan-img, none) 0 0 / var(--hair) calc(var(--hair) * 4);
+  image-rendering: pixelated;
 }
 
 /* Numbers group thousands with a non-breaking space ("972 066"). In a
@@ -122,6 +160,10 @@ body::after {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
 }
+/* The halving line belongs to the block height view; the other views get a
+   plain rule under the header in its place. */
+#app:not([data-view="height"]) .halving { display: none; }
+#app:not([data-view="height"]) .top { border-bottom: 1px solid var(--line); }
 #app.stale .view { opacity: 0.45; transition: opacity 1s; }
 
 /* ---------- header ---------- */
@@ -139,6 +181,24 @@ body::after {
 }
 .top-left { display: flex; align-items: center; gap: 2em; min-width: 0; }
 .status { display: flex; align-items: center; gap: 0.6em; white-space: nowrap; }
+/* View switch: plain [1] [2] [3] [4], faint until hovered. The current view
+   is a little brighter. The space bar steps through the same views. */
+.switch { display: flex; gap: 0.2em; }
+.switch button {
+  font: inherit;
+  letter-spacing: 0;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  padding: 0.4em 0.2em;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0.04;
+  transition: opacity 0.3s ease;
+}
+.switch button[aria-pressed="true"] { opacity: 0.12; }
+.switch button:hover,
+.switch button:focus-visible { opacity: 0.85; outline: none; }
 .dot {
   width: 0.6em; height: 0.6em;
   background: var(--fg);
@@ -165,7 +225,8 @@ body::after {
 .clock { display: flex; justify-content: flex-end; align-items: center; gap: 1.4em; white-space: nowrap; }
 
 /* Theme button: a small bitcoin ₿ mark, barely there until hovered.
-   Click it (or press T) to switch between dark and light. */
+   Click it for a dropdown of themes; T cycles through them. */
+.theme-menu { position: relative; display: flex; align-items: center; }
 .theme-btn {
   display: flex;
   /* Sized from the screen like the rest of the header (a button doesn't
@@ -189,7 +250,47 @@ body::after {
   stroke-linecap: square;
 }
 .theme-btn:hover,
-.theme-btn:focus-visible { opacity: 0.8; outline: none; }
+.theme-btn:focus-visible,
+.theme-btn[aria-expanded="true"] { opacity: 0.8; outline: none; }
+
+.theme-list {
+  position: absolute;
+  top: calc(100% + 1.1em);
+  right: 0;
+  z-index: 30;
+  min-width: 13em;
+  margin: 0;
+  padding: 0.35em 0;
+  list-style: none;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.theme-list[hidden] { display: none; }
+.theme-list button {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  width: 100%;
+  padding: 0.55em 1em;
+  font: inherit;
+  letter-spacing: 0.05em;
+  text-align: left;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.theme-list button::before {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  border: 1px solid currentColor;
+}
+.theme-list button:hover,
+.theme-list button:focus-visible { color: var(--fg); background: var(--panel); outline: none; }
+.theme-list button[aria-checked="true"] { color: var(--fg); }
+.theme-list button[aria-checked="true"]::before { background: var(--btc); border-color: var(--btc); }
 
 /* ---------- halving line ---------- */
 
@@ -236,14 +337,23 @@ body::after {
   transition: width 1.2s cubic-bezier(0.86, 0, 0.07, 1);
 }
 
-/* ---------- block height ---------- */
+/* ---------- views ---------- */
 
+/* One view at a time; the space bar steps through them. */
 .view {
-  display: grid;
+  display: none;
+  /* Always the last row, even when the halving line above it is hidden. */
+  grid-row: 3;
   min-height: 0;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   padding: calc(var(--u) * 1.8) 0 calc(var(--u) * 0.6);
 }
+#app[data-view="height"] .view-height,
+#app[data-view="dashboard"] .view-dashboard,
+#app[data-view="halving"] .view-halving,
+#app[data-view="price"] .view-price,
+#app[data-view="info"] .view-info { display: grid; }
 #app.stale .halving { opacity: 0.45; transition: opacity 1s; }
 
 .fit {
@@ -262,6 +372,373 @@ body::after {
   letter-spacing: 0;
   font-size: 100px;
 }
+
+#probe { position: absolute; visibility: hidden; width: calc(var(--u) * 100); height: 0; }
+
+/* ---------- dashboard: shared type ---------- */
+
+.tile .big,
+.card .h,
+.card .fee,
+.kv .v,
+.halv-clock text {
+  word-spacing: -0.28em;
+}
+
+.label {
+  font-size: calc(var(--u) * 1.2);
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.label #cur { color: var(--muted); }
+
+.kv { min-width: 0; }
+.kv .k {
+  display: block;
+  font-size: calc(var(--u) * 1);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: calc(var(--u) * 0.25);
+  white-space: nowrap;
+}
+.kv .v {
+  display: inline-block;
+  font-size: calc(var(--u) * 2);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.kv .v.alert {
+  background: var(--fg);
+  color: var(--bg);
+  border-radius: var(--radius);
+  padding: 0 0.3em;
+  margin-left: -0.3em;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 0.4em;
+  padding: 0 0.45em;
+  border-radius: var(--radius);
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 0.85em;
+}
+.tag:empty { display: none; }
+
+.bar {
+  display: block;
+  height: calc(var(--u) * 0.45);
+  background: var(--line);
+  overflow: hidden;
+}
+.bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--fg);
+  transition: width 1.2s cubic-bezier(0.86, 0, 0.07, 1);
+}
+
+/* ---------- dashboard ---------- */
+
+.view-dashboard {
+  grid-template-rows: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  padding-top: 0;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  border-bottom: 1px solid var(--line);
+  min-height: 0;
+}
+.hero-main, .hero-side {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  min-width: 0;
+  padding-top: calc(var(--u) * 1.4);
+  padding-bottom: calc(var(--u) * 1.4);
+}
+.hero-main { grid-template-rows: minmax(0, 1fr) auto; }
+.hero-main { padding-right: calc(var(--u) * 2.2); border-right: 1px solid var(--line); }
+.hero-side { padding-left: calc(var(--u) * 2.2); }
+/* The dashboard's numbers sit flush left, not centred. */
+.hero .fit { justify-content: flex-start; }
+/* A label stacked directly on top of its fitted number. */
+.fit.stack {
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: calc(var(--u) * 0.4);
+}
+.hero-sub {
+  display: flex;
+  gap: calc(var(--u) * 3.2);
+  overflow: hidden;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line);
+  min-height: 0;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.6);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: calc(var(--u) * 1.4) calc(var(--u) * 2);
+  border-right: 1px solid var(--line);
+}
+.tile:first-child { padding-left: 0; }
+.tile:last-child { padding-right: 0; border-right: 0; }
+
+.tile .big {
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: calc(var(--u) * 4.8);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.tile .big small {
+  font-size: 0.26em;
+  margin-left: 0.45em;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.tile .sub {
+  font-size: calc(var(--u) * 1.05);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tile .bar { margin-top: calc(var(--u) * 0.2); }
+
+/* Chain strip: the next blocks to be mined, then the latest mined ones. */
+.chain {
+  display: flex;
+  gap: calc(var(--u) * 2);
+  padding: calc(var(--u) * 1.4) 0;
+  min-height: 0;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.6);
+  min-width: 0;
+  min-height: 0;
+}
+.cards {
+  display: flex;
+  gap: calc(var(--u) * 0.8);
+  flex: 1;
+  min-height: 0;
+}
+.card {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(var(--u) * 1) calc(var(--u) * 1.2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.card.pending { border: 1px dashed var(--muted); }
+.card.mined   { background: var(--panel); }
+.card.latest  { background: var(--fg); color: var(--bg); }
+.card.fresh   { animation: fadeUp 1s ease both; }
+.card .h {
+  font-size: calc(var(--u) * 1.1);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.card .fee { font-family: var(--font-display); font-size: calc(var(--u) * 2.7); line-height: 1; letter-spacing: -0.02em; white-space: nowrap; }
+.card .fee small { font-size: 0.32em; margin-left: 0.4em; letter-spacing: 0.06em; opacity: 0.55; }
+.card .meta {
+  font-size: calc(var(--u) * 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bottom {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 3.5);
+  padding-top: calc(var(--u) * 0.9);
+  border-top: 1px solid var(--line);
+  font-size: calc(var(--u) * 1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.bottom .k { color: var(--muted); }
+.bottom .supply { display: flex; align-items: center; gap: 0.8em; flex: 1; min-width: 0; }
+.bar.inline { flex: 0 1 calc(var(--u) * 14); height: calc(var(--u) * 0.35); }
+
+/* ---------- halving dial ---------- */
+
+.view-halving { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+
+.v2-main {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  padding-right: calc(var(--u) * 3);
+  border-right: 1px solid var(--line);
+}
+
+.halv-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding-left: calc(var(--u) * 3);
+}
+.clock-box { position: relative; flex: 1; min-height: 0; }
+.halv-clock { position: absolute; inset: 0; width: 100%; height: 100%; }
+.halv-clock text { font-family: var(--font-display); fill: var(--fg); }
+.halv-clock .tick { stroke: var(--line); stroke-width: 3; }
+.halv-clock .tick.major { stroke-width: 4; }
+.halv-clock .tick.on { stroke: var(--muted); }
+.halv-clock .tick.major.on { stroke: var(--fg); }
+.halv-clock .ring-track { fill: none; stroke: var(--line); }
+.halv-clock .ring-fill { fill: none; stroke: var(--btc); transition: stroke-dasharray 1.2s ease; }
+
+/* ---------- price in steps ---------- */
+
+.view-price { padding-bottom: calc(var(--u) * 1.2); }
+/* A small solid arrow after the price: up after it last stepped up, down
+   after it last stepped down. Sized in em so it scales with the fitted
+   number, and lifted above the scanlines so its edges stay clean. */
+.price-arrow {
+  display: none;
+  position: relative;
+  z-index: 21;
+  width: 0.11em;
+  height: 0.13em;
+  margin-left: 0.14em;
+  vertical-align: 0.28em;
+  fill: currentColor;
+  shape-rendering: geometricPrecision;
+}
+#priceStep.up .price-arrow,
+#priceStep.down .price-arrow { display: inline-block; }
+#priceStep.down .price-arrow { transform: rotate(180deg); }
+
+/* ---------- about ---------- */
+
+/* The story and the art, scaled as one piece to fit the screen: everything
+   inside .about is sized in em, and the script sets .about's font size. */
+.view-info {
+  position: relative;
+  align-items: center;
+  justify-items: center;
+  overflow: hidden;
+}
+.about {
+  width: 58em;
+  font-size: 10px;
+}
+.about-head {
+  display: flex;
+  align-items: center;
+  gap: 1.6em;
+  margin-bottom: 1.6em;
+}
+.info-title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 3em;
+  line-height: 1;
+  letter-spacing: 0.12em;
+}
+.title-sub {
+  display: block;
+  margin-top: 0.45em;
+  font-size: 0.42em;
+  letter-spacing: 0.6em;
+  color: var(--btc);
+}
+.about-lead {
+  margin: 0 0 1em;
+  font-size: 1.5em;
+  line-height: 1.4;
+}
+.about p:not(.about-lead) {
+  margin: 0 0 0.9em;
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.about-points {
+  display: grid;
+  gap: 0.5em;
+  margin: 0.6em 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.05em;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.about-points li::before { content: "> "; color: var(--btc); }
+.about-points b { font-weight: 500; color: var(--fg); }
+
+/* The spinning block and coin beside the title; the script sizes the art
+   to fill its box. */
+.cube-box {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 9em;
+  height: 9em;
+  overflow: hidden;
+}
+.cube-art {
+  flex: none;
+  margin: 0;
+  font-family: var(--font);
+  font-size: 10px;
+  line-height: 1.15;
+  letter-spacing: 0;
+  white-space: pre;
+  cursor: grab;
+  touch-action: none;
+}
+.cube-art:active { cursor: grabbing; }
+.cube-art i { font-style: normal; }
+/* The block's faces in three shades, edges and bright ₿s, orange (the ₿ on
+   the block, the coin's edge), the coin's face in three orange shades, and
+   characters mid-scramble. */
+.cube-art .s1 { opacity: 0.18; }
+.cube-art .s2 { opacity: 0.32; }
+.cube-art .s3 { opacity: 0.48; }
+.cube-art .e { color: var(--fg); }
+.cube-art .b { color: var(--btc); }
+.cube-art .x { color: var(--btc); }
+.cube-art .o1 { color: var(--btc); opacity: 0.4; }
+.cube-art .o2 { color: var(--btc); opacity: 0.6; }
+.cube-art .o3 { color: var(--btc); opacity: 0.85; }
 
 /* ---------- new block flash ---------- */
 
@@ -296,4 +773,16 @@ body::after {
 
 @media (max-aspect-ratio: 1/1) {
   :root { --u: min(1.6vw, 0.95vh); }
+  .view-dashboard { grid-template-rows: minmax(0, 1.6fr) minmax(0, 1.6fr) minmax(0, 0.9fr) auto; }
+  .view-halving { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 0.8fr) minmax(0, 1fr); }
+  .v2-main { padding-right: 0; border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: calc(var(--u) * 2); }
+  .halv-info { padding-left: 0; padding-top: calc(var(--u) * 2); }
+  .hero { grid-template-columns: 1fr; grid-template-rows: 1.4fr 1fr; }
+  .hero-main { padding-right: 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  .hero-side { padding-left: 0; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; }
+  .tile:nth-child(2n) { border-right: 0; padding-right: 0; }
+  .tile:nth-child(2n + 1) { padding-left: 0; }
+  .tile:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
+  .about { width: 40em; }
 }
