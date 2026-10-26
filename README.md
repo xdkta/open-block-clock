@@ -1,6 +1,6 @@
 # Open Block Clock
 
-<img width="1864" height="943" alt="Screenshot 2026-10-26 022224" src="https://github.com/user-attachments/assets/dcfe5b32-1a8b-4edd-96af-90548b426620" />
+  <img src="docs/info.png" alt="The Open Block Clock about page" width="932">
 
 **A Bitcoin block clock with nothing to hide.**
 
@@ -25,7 +25,6 @@ Bitcoin network.
   Clock project's story beside a spinning 3D bitcoin block and coin, drawn
   in text from the latest block hash (drag them to spin)
 
-  <img src="docs/info.png" alt="The Open Block Clock about page" width="932">
 
 - More views, one press of the space bar apart (or click the status, e.g.
   `LIVE`, in the header and pick [1] to [4] to jump to one):
